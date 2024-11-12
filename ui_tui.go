@@ -107,7 +107,7 @@ func AppInit() {
 				IfApp(func() {
 					appIsRunning = false
 				})
-				quit.Signal()
+				close(quitUI)
 				app.Stop()
 			case ' ':
 				IfApp(func() {
@@ -119,7 +119,7 @@ func AppInit() {
 			IfApp(func() {
 				appIsRunning = false
 			})
-			quit.Signal()
+			close(quitUI)
 			app.Stop()
 		case tcell.KeyEsc, tcell.KeyTab:
 			IfApp(func() {
@@ -130,16 +130,17 @@ func AppInit() {
 		}
 		return nil
 	})
-
-	go AppUpdate()
 }
 
 func AppRun() {
 	AppClosed.Reset() // Run application
 	defer AppClosed.Signal()
+	stop := make(chan any)
+	go AppUpdate(stop)
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
+	close(stop)
 }
 
 func AppClose() {
@@ -148,11 +149,13 @@ func AppClose() {
 	})
 }
 
-func AppUpdate() {
+func AppUpdate(stop chan any) {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	for {
 		select {
-		case <-quit.Channel():
+		case <-stop:
+			return
+		case <-quitUI:
 			return
 		case <-ticker.C:
 			IfApp(func() {

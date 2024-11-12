@@ -11,13 +11,13 @@ import (
 // When signaled, all waiting goroutines are released, and all calls to Wait return immediately.
 type ManualResetEvent struct {
 	l sync.Mutex
-	c chan struct{}
+	c chan any
 }
 
 // NewManualResetEvent returns a new ManualResetEvent with initial state s
 func NewManualResetEvent(s bool) *ManualResetEvent {
 	e := ManualResetEvent{
-		c: make(chan struct{}),
+		c: make(chan any),
 	}
 	if s {
 		close(e.c)
@@ -42,7 +42,7 @@ func (e *ManualResetEvent) Reset() {
 	defer e.l.Unlock()
 	select {
 	case <-e.c: //ch is closed
-		e.c = make(chan struct{})
+		e.c = make(chan any)
 	default:
 	}
 }
@@ -63,7 +63,7 @@ func (e *ManualResetEvent) WaitContext(ctx context.Context) error {
 	}
 }
 
-func (e *ManualResetEvent) Channel() chan struct{} {
+func (e *ManualResetEvent) Channel() chan any {
 	return e.c
 }
 

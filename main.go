@@ -42,7 +42,7 @@ func updateTable() {
 }
 
 func updateForEver() {
-	ticker := time.NewTicker(100 * time.Millisecond)
+	ticker := time.NewTicker(50 * time.Millisecond)
 	for {
 		select {
 		case <-ticker.C:
@@ -55,6 +55,7 @@ var exitSignal = make(chan os.Signal, 1)
 
 func main() {
 	signal.Notify(exitSignal, syscall.SIGINT, syscall.SIGTERM)
+	syscall.SetNonblock(0, true)
 
 	initTable()
 	go updateForEver()
@@ -62,51 +63,37 @@ func main() {
 	// Start a dummy infinite logger
 	go func() {
 		for {
-			Log("Log message: " + time.Now().String())
-			time.Sleep(100 * time.Millisecond)
+			PrintUI("Log message: " + time.Now().String())
+			time.Sleep(10 * time.Millisecond)
 		}
 	}()
 
-	// Switch to console every 5 seconds
-	go func() {
-		for {
-			time.Sleep(5 * time.Second)
-			Log("Switching to console")
-			AppClose()
-		}
-	}()
+	//// Switch to console every 5 seconds
+	//go func() {
+	//	for {
+	//		time.Sleep(5 * time.Second)
+	//		Log("Switching to console")
+	//		SwitchUI(true)
+	//	}
+	//}()
 
 	// Switch to app after 10 seconds
 	go func() {
-		time.Sleep(10 * time.Second)
-		ConsoleClose()
+		time.Sleep(2 * time.Second)
+		SwitchUI(false)
 	}()
 
-	runApp := false
+	go RunUI(true)
 loop:
 	for {
 		select {
 		case <-exitSignal:
+			StopUI()
+		case <-StoppedUI:
 			break loop
-		case <-quit.Channel():
-			break loop
-		default:
 		}
-		if runApp {
-			SuspendLogs()
-			AppInit()
-			IfConsole(func() {
-				appIsRunning = true
-			})
-			AppRun()
-			ResumeLogs()
-		} else {
-			ConsoleRun()
-		}
-		runApp = !runApp
 	}
-	AppClose()
-	ConsoleClose()
-	AppClosed.Wait()
-	ConsoleClosed.Wait()
+
+	println("The END")
+
 }
