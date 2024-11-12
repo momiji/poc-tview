@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	"golang.org/x/term"
@@ -6,18 +6,21 @@ import (
 	"time"
 )
 
-var ConsoleClosed = NewManualResetEvent(true)
+var consoleClosed = NewManualResetEvent(true)
 var closeConsole = NewManualResetEvent(false)
 
-func ConsoleRun() {
-	ConsoleClosed.Reset()
-	defer ConsoleClosed.Signal()
+func consoleRun() {
+	consoleClosed.Reset()
+	defer consoleClosed.Signal()
+
+	closeConsole.Reset()
 
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		panic(err)
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
 	b := make([]byte, 1)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	loop := true
@@ -46,6 +49,6 @@ func ConsoleRun() {
 	}
 }
 
-func ConsoleClose() {
+func consoleClose() {
 	closeConsole.Signal()
 }

@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	"github.com/dustin/go-humanize"
@@ -13,13 +13,13 @@ import (
 var screen tcell.Screen
 var app *tview.Application
 var table *tview.Table
-var AppClosed = NewManualResetEvent(true)
+var appClosed = NewManualResetEvent(true)
 
-func BytesFormat(rate *ratecounter.Rate) string {
+func bytesFormat(rate *ratecounter.Rate) string {
 	return humanize.Comma(int64(rate.Total()))
 }
 
-func RateFormat(rate *ratecounter.Rate) string {
+func rateFormat(rate *ratecounter.Rate) string {
 	return strings.ReplaceAll(humanize.IBytes(uint64(rate.RatePer(1*time.Second))), "i", "")
 }
 
@@ -28,32 +28,35 @@ func setCell(i, j int, s string, w int, left bool, newRow bool) {
 	if left {
 		align = tview.AlignLeft
 	}
+	length := tview.TaggedStringWidth(s)
 	if w > 0 {
-		if len(s) < w {
+		if length < w {
 			if left {
-				s += strings.Repeat(" ", w-len(s))
+				s += strings.Repeat(" ", w-length)
 			} else {
-				s = strings.Repeat(" ", w-len(s)) + s
+				s = strings.Repeat(" ", w-length) + s
 			}
 		}
 	} else if w < 0 {
-		if len(s) > -w {
+		if length > -w {
 			s = s[:-w-1] + "…"
-		} else if len(s) < -w {
+		} else if length < -w {
 			if left {
-				s += strings.Repeat(" ", -w-len(s))
+				s += strings.Repeat(" ", -w-length)
 			} else {
-				s = strings.Repeat(" ", -w-len(s)) + s
+				s = strings.Repeat(" ", -w-length) + s
 			}
 		}
 	}
 	s = " " + s + " "
 	if newRow {
 		color := tcell.ColorWhite
+		bgcolor := tcell.ColorBlack
 		if i == 0 {
-			color = tcell.ColorYellow
+			color = tcell.ColorWhite
+			s = "[::r]" + s + "[::R]"
 		}
-		table.SetCell(i, j, tview.NewTableCell(s).SetAlign(align).SetTextColor(color))
+		table.SetCell(i, j, tview.NewTableCell(s).SetAlign(align).SetTextColor(color).SetBackgroundColor(bgcolor))
 	} else {
 		table.GetCell(i, j).Text = s
 	}
@@ -68,7 +71,7 @@ func setRow(row int, new bool, urlWidth int, reqId string, url string, bytesSent
 	setCell(row, 5, bytesSentPerSecond, 7, false, new)
 }
 
-func AppInit() {
+func appInit() {
 	if app != nil {
 		return
 	}
@@ -81,19 +84,18 @@ func AppInit() {
 	}
 
 	// Create table
-	table = tview.NewTable()
-	table.
+	table = tview.NewTable().
 		ScrollToBeginning().
 		SetBorders(false).
 		SetFixed(1, 0).
 		SetSelectable(false, false).
-		SetSelectedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorWhite)).
+		//SetSelectedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorWhite)).
 		SetSeparator(tview.Borders.Vertical)
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 	})
 
-	setRow(0, true, 0, "ID", "URL", "RECV", "SENT", "RECV/S", "SENT/S")
+	//setRow(0, true, 0, "ID", "URL", "RECV", "SENT", "RECV/S", "SENT/S")
 
 	// Create application
 	app = tview.NewApplication().EnableMouse(false)
@@ -132,24 +134,24 @@ func AppInit() {
 	})
 }
 
-func AppRun() {
-	AppClosed.Reset() // Run application
-	defer AppClosed.Signal()
+func appRun() {
+	appClosed.Reset() // Run application
+	defer appClosed.Signal()
 	stop := make(chan any)
-	go AppUpdate(stop)
+	go appUpdate(stop)
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
 	close(stop)
 }
 
-func AppClose() {
+func appClose() {
 	IfApp(func() {
 		app.QueueEvent(tcell.NewEventKey(tcell.KeyEsc, 0, tcell.ModNone))
 	})
 }
 
-func AppUpdate(stop chan any) {
+func appUpdate(stop chan any) {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	for {
 		select {
@@ -168,9 +170,10 @@ func AppUpdate(stop chan any) {
 						urlWidth = 20
 					}
 					if table.GetRowCount() == 0 {
-						setRow(0, true, 0, "ID", "URL", "RECV", "SENT", "RECV/S", "SENT/S")
+						setRow(0, true, urlWidth, "ID", "URL", "RECV", "SENT", "RECV/S", "SENT/S")
 					}
-					for i, row := range trafficTable.Table {
+					trafficRows := Traffic.RowsCopy()
+					for i, row := range trafficRows {
 						if i+1 >= screenHeight {
 							break
 						}
@@ -178,13 +181,13 @@ func AppUpdate(stop chan any) {
 						setRow(i+1, newRow, urlWidth,
 							strconv.Itoa(int(row.ReqId)),
 							row.Url,
-							BytesFormat(row.BytesSentPerSecond),
-							BytesFormat(row.BytesReceivedPerSecond),
-							RateFormat(row.BytesSentPerSecond),
-							RateFormat(row.BytesReceivedPerSecond))
+							bytesFormat(row.BytesSentPerSecond),
+							bytesFormat(row.BytesReceivedPerSecond),
+							rateFormat(row.BytesSentPerSecond),
+							rateFormat(row.BytesReceivedPerSecond))
 					}
 					// remove any extra rows
-					for i := table.GetRowCount() - 1; i > len(trafficTable.Table); i-- {
+					for i := table.GetRowCount() - 1; i > len(trafficRows); i-- {
 						table.RemoveRow(i)
 					}
 					// remove hidden rows

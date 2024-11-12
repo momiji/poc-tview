@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	"fmt"
@@ -28,9 +28,9 @@ func IfConsole(fn func()) {
 
 func SwitchUI(console bool) {
 	if console {
-		AppClose()
+		appClose()
 	} else {
-		ConsoleClose()
+		consoleClose()
 	}
 }
 
@@ -43,24 +43,24 @@ loop:
 		default:
 		}
 		if console {
-			ConsoleRun()
+			consoleRun()
 		} else {
-			SuspendPrintUI()
-			AppInit()
+			suspendPrintUI()
+			appInit()
 			IfConsole(func() {
 				appIsRunning = true
 			})
-			AppRun()
-			ResumePrintUI()
+			appRun()
+			resumePrintUI()
 		}
 		console = !console
 	}
-	// first close App then Console, so we'll be in console mode at the end and normally ResumePrintUI
-	AppClose()
-	ConsoleClose()
+	// first close App then Console, so we'll be in console mode at the end and normally resumePrintUI
+	appClose()
+	consoleClose()
 	// wait for app and console closed
-	AppClosed.Wait()
-	ConsoleClosed.Wait()
+	appClosed.Wait()
+	consoleClosed.Wait()
 	// signal close
 	close(StoppedUI)
 }
@@ -72,13 +72,13 @@ func StopUI() {
 var suspendLock sync.RWMutex
 var suspended bool
 
-func SuspendPrintUI() {
+func suspendPrintUI() {
 	suspendLock.Lock()
 	defer suspendLock.Unlock()
 	suspended = true
 }
 
-func ResumePrintUI() {
+func resumePrintUI() {
 	suspendLock.Lock()
 	defer suspendLock.Unlock()
 	suspended = false
