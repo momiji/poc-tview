@@ -14,8 +14,8 @@ import (
 var atomicReqId = atomic.Int32{}
 
 func initTable() {
-	s1 := "[aqua]pac-ret>ret[white] CONNECT [yellow]http://www.example.com[white] HTTP/1.1"
-	s2 := "[aqua]socks[white] GET [yellow]http://www.google.com[white] HTTP/1.1"
+	s1 := "pac-ret>ret CONNECT http://www.example.com HTTP/1.1"
+	s2 := "socks GET http://www.google.com HTTP/1.1"
 	rows := []*ui.TrafficRow{
 		ui.NewTraffic(0, s1),
 		ui.NewTraffic(1, s2),
@@ -70,7 +70,7 @@ func main() {
 	go func() {
 		for {
 			ui.PrintUI("Log message: " + time.Now().String())
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(200 * time.Millisecond)
 		}
 	}()
 
@@ -84,6 +84,7 @@ func main() {
 	// Switch to app after 2 seconds
 	go func() {
 		time.Sleep(500 * time.Millisecond)
+		ui.PrintUI("Switching to app")
 		ui.SwitchUI(false)
 	}()
 

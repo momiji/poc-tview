@@ -48,6 +48,14 @@ func setCell(i, j int, s string, w int, left bool, newRow bool) {
 			}
 		}
 	}
+	if i > 0 && j == 1 {
+		a := strings.Split(s, " ")
+		a[0] = "[aqua]" + a[0] + "[-]"
+		if len(a) > 2 {
+			a[2] = "[yellow]" + a[2] + "[-]"
+		}
+		s = strings.Join(a, " ")
+	}
 	s = " " + s + " "
 	if newRow {
 		color := tcell.ColorWhite
@@ -98,8 +106,8 @@ func appInit() {
 	//setRow(0, true, 0, "ID", "URL", "RECV", "SENT", "RECV/S", "SENT/S")
 
 	// Create application
-	app = tview.NewApplication().EnableMouse(false)
-	app.SetRoot(table, true).SetScreen(screen)
+	app = tview.NewApplication().SetScreen(screen).EnableMouse(true)
+	app.SetRoot(table, true)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
@@ -153,6 +161,8 @@ func appClose() {
 
 func appUpdate(stop chan any) {
 	ticker := time.NewTicker(100 * time.Millisecond)
+	oldScreenWidth := 0
+	oldScreenHeight := 0
 	for {
 		select {
 		case <-stop:
@@ -163,15 +173,19 @@ func appUpdate(stop chan any) {
 			IfApp(func() {
 				app.QueueUpdateDraw(func() {
 					// update the table with the new data
+					screen.Show()
 					screenWidth, screenHeight := screen.Size()
+					if screenWidth != oldScreenWidth || screenHeight != oldScreenHeight {
+						oldScreenWidth = screenWidth
+						oldScreenHeight = screenHeight
+						screen.Clear()
+					}
 					totalWidth := 5 + 15 + 15 + 7 + 7 + 15 + 2
 					urlWidth := screenWidth - totalWidth
 					if urlWidth < 20 {
 						urlWidth = 20
 					}
-					if table.GetRowCount() == 0 {
-						setRow(0, true, urlWidth, "ID", "URL", "RECV", "SENT", "RECV/S", "SENT/S")
-					}
+					setRow(0, true, urlWidth, "ID", "URL", "RECV", "SENT", "RECV/S", "SENT/S")
 					trafficRows := Traffic.RowsCopy()
 					for i, row := range trafficRows {
 						if i+1 >= screenHeight {
