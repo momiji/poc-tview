@@ -14,6 +14,8 @@ var screen tcell.Screen
 var app *tview.Application
 var table *tview.Table
 var appClosed = NewManualResetEvent(true)
+var stopUpdate = NewManualResetEvent(false)
+var updateStopped = NewManualResetEvent(false)
 
 func bytesFormat(rate *ratecounter.Rate) string {
 	return humanize.Comma(int64(rate.Total()))
@@ -139,12 +141,17 @@ func appInit() {
 func appRun() {
 	appClosed.Reset() // Run application
 	defer appClosed.Signal()
-	stop := make(chan any)
-	go appUpdate(stop)
+	updateStopped.Reset()
+	// start update in background
+	go appUpdate()
+	// start app ui
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
-	close(stop)
+	// ensure update is stopped so we can nil app
+	stopUpdate.Signal()
+	updateStopped.Wait()
+	app = nil
 }
 
 func appClose() {
@@ -153,11 +160,13 @@ func appClose() {
 	})
 }
 
-func appUpdate(stop chan any) {
+func appUpdate() {
+	defer updateStopped.Signal()
+	stopUpdate.Reset()
 	ticker := time.NewTicker(100 * time.Millisecond)
 	for {
 		select {
-		case <-stop:
+		case <-stopUpdate.c:
 			return
 		case <-quitUI:
 			return

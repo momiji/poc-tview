@@ -12,21 +12,20 @@ var closeConsole = NewManualResetEvent(false)
 func consoleRun() {
 	consoleClosed.Reset()
 	defer consoleClosed.Signal()
-
 	closeConsole.Reset()
-
+	// backup term state and restore it on return
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		panic(err)
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
-
+	// console loop
 	b := make([]byte, 1)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	loop := true
 	for loop {
 		select {
-		case <-closeConsole.Channel():
+		case <-closeConsole.c:
 			closeConsole.Reset()
 			loop = false
 		case <-ticker.C:

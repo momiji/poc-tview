@@ -66,7 +66,6 @@ func (e *ManualResetEvent) WaitContext(ctx context.Context) error {
 func (e *ManualResetEvent) Channel() chan any {
 	return e.c
 }
-
 func (e *ManualResetEvent) IsSignaled() bool {
 	select {
 	case <-e.c: // ch is closed
