@@ -59,17 +59,22 @@ func setCell(i, j int, s string, w int, left bool, newRow bool) {
 		s = strings.Join(a, " ")
 	}
 	s = " " + s + " "
-	if newRow {
-		color := tcell.ColorWhite
-		bgcolor := tcell.ColorBlack
-		if i == 0 {
-			color = tcell.ColorWhite
-			s = "[::r]" + s + "[::R]"
-		}
-		table.SetCell(i, j, tview.NewTableCell(s).SetAlign(align).SetTextColor(color).SetBackgroundColor(bgcolor))
-	} else {
-		table.GetCell(i, j).Text = s
+	// style
+	color := tcell.ColorWhite
+	bgcolor := tcell.ColorBlack
+	if i == 0 {
+		bgcolor = tcell.ColorAqua
+		color = tcell.ColorBlack
+		//s = "[::r]" + s + "[::R]"
 	}
+	if i == 5 {
+		bgcolor = tcell.ColorDarkRed
+	}
+	//if newRow {
+	//	table.SetCell(i, j, tview.NewTableCell(s).SetAlign(align).SetTextColor(color).SetBackgroundColor(bgcolor))
+	//} else {
+	table.SetCell(i, j, table.GetCell(i, j).SetAlign(align).SetTextColor(color).SetBackgroundColor(bgcolor).SetText(s))
+	//}
 }
 
 func setRow(row int, new bool, urlWidth int, reqId string, url string, bytesSent string, bytesReceived string, bytesSentPerSecond string, bytesReceivedPerSecond string) {
