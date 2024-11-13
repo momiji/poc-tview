@@ -70,11 +70,8 @@ func setCell(i, j int, s string, w int, left bool, newRow bool) {
 	if i == 5 {
 		bgcolor = tcell.ColorDarkRed
 	}
-	//if newRow {
-	//	table.SetCell(i, j, tview.NewTableCell(s).SetAlign(align).SetTextColor(color).SetBackgroundColor(bgcolor))
-	//} else {
+	// cell
 	table.SetCell(i, j, table.GetCell(i, j).SetAlign(align).SetTextColor(color).SetBackgroundColor(bgcolor).SetText(s))
-	//}
 }
 
 func setRow(row int, new bool, urlWidth int, reqId string, url string, bytesSent string, bytesReceived string, bytesSentPerSecond string, bytesReceivedPerSecond string) {
@@ -100,7 +97,6 @@ func appInit() {
 		SetBorders(false).
 		SetFixed(1, 0).
 		SetSelectable(false, false).
-		//SetSelectedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorWhite)).
 		SetSeparator(tview.Borders.Vertical)
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		return nil
