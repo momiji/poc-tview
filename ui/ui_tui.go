@@ -80,10 +80,6 @@ func setRow(row int, new bool, urlWidth int, reqId string, url string, bytesSent
 }
 
 func appInit() {
-	if app != nil {
-		return
-	}
-
 	var err error
 
 	// Create screen
@@ -103,10 +99,8 @@ func appInit() {
 		return nil
 	})
 
-	//setRow(0, true, 0, "ID", "URL", "RECV", "SENT", "RECV/S", "SENT/S")
-
 	// Create application
-	app = tview.NewApplication().SetScreen(screen).EnableMouse(true)
+	app = tview.NewApplication().SetScreen(screen)
 	app.SetRoot(table, true)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -161,8 +155,6 @@ func appClose() {
 
 func appUpdate(stop chan any) {
 	ticker := time.NewTicker(100 * time.Millisecond)
-	oldScreenWidth := 0
-	oldScreenHeight := 0
 	for {
 		select {
 		case <-stop:
@@ -173,13 +165,7 @@ func appUpdate(stop chan any) {
 			IfApp(func() {
 				app.QueueUpdateDraw(func() {
 					// update the table with the new data
-					screen.Show()
 					screenWidth, screenHeight := screen.Size()
-					if screenWidth != oldScreenWidth || screenHeight != oldScreenHeight {
-						oldScreenWidth = screenWidth
-						oldScreenHeight = screenHeight
-						screen.Clear()
-					}
 					totalWidth := 5 + 15 + 15 + 7 + 7 + 15 + 2
 					urlWidth := screenWidth - totalWidth
 					if urlWidth < 20 {
