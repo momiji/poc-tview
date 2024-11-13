@@ -99,6 +99,6 @@ loop:
 		}
 	}
 
-	println("The END")
+	ui.PrintUI("The END")
 
 }

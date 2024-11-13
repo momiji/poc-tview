@@ -27,12 +27,10 @@ func consoleRun() {
 	for loop {
 		select {
 		case <-closeConsole.Channel():
-			println("consoleRun: closeConsole")
 			closeConsole.Reset()
 			loop = false
 		case <-ticker.C:
 			n, err := os.Stdin.Read(b)
-			println("consoleRun: os.Stdin.Read", n, err)
 			if err != nil {
 				continue
 			}

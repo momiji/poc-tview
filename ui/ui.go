@@ -56,14 +56,14 @@ loop:
 		console = !console
 	}
 	// first close App then Console, so we'll be in console mode at the end and normally resumePrintUI
-	println("before appClose")
+	PrintUI("before appClose")
 	appClose()
-	println("before consoleClose")
+	PrintUI("before consoleClose")
 	consoleClose()
-	println("before appClosed.Wait()")
+	PrintUI("before appClosed.Wait()")
 	// wait for app and console closed
 	appClosed.Wait()
-	println("before consoleClosed.Wait()")
+	PrintUI("before consoleClosed.Wait()")
 	consoleClosed.Wait()
 	// signal close
 	close(StoppedUI)
