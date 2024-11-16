@@ -17,21 +17,21 @@ func initTable() {
 	s1 := "pac-ret>ret CONNECT http://www.example.com HTTP/1.1"
 	s2 := "socks GET http://www.google.com HTTP/1.1"
 	rows := []*ui.TrafficRow{
-		ui.NewTraffic(0, s1),
-		ui.NewTraffic(1, s2),
-		ui.NewTraffic(2, s1),
-		ui.NewTraffic(3, s2),
-		ui.NewTraffic(4, s1),
-		ui.NewTraffic(5, s2),
-		ui.NewTraffic(6, s1),
-		ui.NewTraffic(7, s2),
-		ui.NewTraffic(8, s1),
-		ui.NewTraffic(9, s2),
-		ui.NewTraffic(10, s1),
-		ui.NewTraffic(11, s1),
-		ui.NewTraffic(12, s1),
-		ui.NewTraffic(13, s2),
-		ui.NewTraffic(14, s2),
+		ui.NewTrafficRow(0, s1),
+		ui.NewTrafficRow(1, s2),
+		ui.NewTrafficRow(2, s1),
+		ui.NewTrafficRow(3, s2),
+		ui.NewTrafficRow(4, s1),
+		ui.NewTrafficRow(5, s2),
+		ui.NewTrafficRow(6, s1),
+		ui.NewTrafficRow(7, s2),
+		ui.NewTrafficRow(8, s1),
+		ui.NewTrafficRow(9, s2),
+		ui.NewTrafficRow(10, s1),
+		ui.NewTrafficRow(11, s1),
+		ui.NewTrafficRow(12, s1),
+		ui.NewTrafficRow(13, s2),
+		ui.NewTrafficRow(14, s2),
 	}
 	for _, row := range rows {
 		ui.Traffic.Add(row)

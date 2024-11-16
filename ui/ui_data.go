@@ -21,7 +21,7 @@ type TrafficTable struct {
 	lock  *sync.RWMutex
 }
 
-func NewTraffic(reqId int32, url string) *TrafficRow {
+func NewTrafficRow(reqId int32, url string) *TrafficRow {
 	return &TrafficRow{
 		ReqId:                  reqId,
 		Url:                    url,
