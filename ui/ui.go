@@ -10,20 +10,26 @@ var appIsRunningLock sync.Mutex
 var quitUI = make(chan any)
 var StoppedUI = make(chan any)
 
-func ifAppConsole(running bool, fn func()) {
+func IfAppConsole(fn func(console bool)) {
 	appIsRunningLock.Lock()
 	defer appIsRunningLock.Unlock()
-	if appIsRunning == running {
-		fn()
-	}
+	fn(!appIsRunning)
 }
 
 func IfApp(fn func()) {
-	ifAppConsole(true, fn)
+	IfAppConsole(func(console bool) {
+		if !console {
+			fn()
+		}
+	})
 }
 
 func IfConsole(fn func()) {
-	ifAppConsole(false, fn)
+	IfAppConsole(func(console bool) {
+		if console {
+			fn()
+		}
+	})
 }
 
 func SwitchUI(console bool) {
@@ -92,6 +98,6 @@ func PrintUI(format string, a ...any) {
 	suspendLock.RLock()
 	defer suspendLock.RUnlock()
 	if !suspended {
-		fmt.Printf(format+"\r\n", a...)
+		fmt.Printf(format+"\n", a...)
 	}
 }

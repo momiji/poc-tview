@@ -61,7 +61,6 @@ var exitSignal = make(chan os.Signal, 1)
 
 func main() {
 	signal.Notify(exitSignal, syscall.SIGINT, syscall.SIGTERM)
-	syscall.SetNonblock(0, true)
 
 	initTable()
 	go updateForEver()
